@@ -108,6 +108,9 @@ cd nodeproxy && npm install && npm start
 
 ## Use it with Claude Code
 
+https://github.com/user-attachments/assets/ec28c82a-9020-4428-b770-2b662082d2c6
+
+
 ```bash
 export ANTHROPIC_BASE_URL=http://localhost:8080
 export ANTHROPIC_AUTH_TOKEN=pick-any-local-secret   # matches PROXY_API_KEY
