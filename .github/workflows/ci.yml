@@ -1,0 +1,227 @@
+name: CI
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+  workflow_dispatch:
+
+# Only the newest run per branch matters; cancel the rest.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  go:
+    name: Go ${{ matrix.go }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        go: ["1.21", "stable"]
+    defaults:
+      run:
+        working-directory: goproxy
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: ${{ matrix.go }}
+          # The module has no dependencies, so there is no go.sum to cache.
+          cache: false
+
+      - name: Check formatting
+        run: |
+          unformatted="$(gofmt -l .)"
+          if [ -n "$unformatted" ]; then
+            echo "::error::These files need gofmt (run 'make fmt'):"
+            echo "$unformatted"
+            exit 1
+          fi
+
+      - name: Vet
+        run: go vet ./...
+
+      - name: Build
+        run: go build ./...
+
+      - name: Test
+        run: go test -race -coverprofile=coverage.out -covermode=atomic ./...
+
+      - name: Coverage summary
+        run: |
+          {
+            echo "### Go ${{ matrix.go }} coverage"
+            echo '```'
+            go tool cover -func=coverage.out | tail -1
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  python:
+    name: Python ${{ matrix.python }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python: ["3.9", "3.10", "3.11", "3.12", "3.13"]
+    defaults:
+      run:
+        working-directory: pyproxy
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+
+      - name: Check syntax
+        run: python -m compileall -q main.py
+
+      - name: Test
+        run: python -m unittest discover -p "test_*.py" -v
+
+  node:
+    name: Node ${{ matrix.node }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        node: ["18", "20", "22"]
+    defaults:
+      run:
+        working-directory: nodeproxy
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+          cache: npm
+          cache-dependency-path: nodeproxy/package-lock.json
+
+      - name: Install
+        run: npm ci
+
+      - name: Test
+        run: npm test
+
+  parity:
+    name: Cross-implementation parity
+    runs-on: ubuntu-latest
+    needs: [go, python, node]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: goproxy/go.mod
+          cache: false
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: nodeproxy/package-lock.json
+
+      - name: Install Node dependencies
+        run: npm ci
+        working-directory: nodeproxy
+
+      - name: Build the Go proxy
+        run: go build -o goproxy .
+        working-directory: goproxy
+
+      # Boots all three proxies against one fake upstream, sends an identical
+      # request set, and diffs both the responses and the bytes each proxy
+      # forwarded. This is what keeps the implementations interchangeable.
+      - name: Check all three implementations agree
+        run: python3 scripts/parity_check.py
+
+  scripts:
+    name: Shell scripts
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check syntax
+        run: |
+          for script in scripts/*.sh; do
+            bash -n "$script" || exit 1
+            echo "ok $script"
+          done
+
+      - name: Check executable bits
+        run: |
+          exit_code=0
+          for script in scripts/*.sh scripts/*.py; do
+            if [ ! -x "$script" ]; then
+              echo "::error file=$script::not executable (run 'chmod +x $script')"
+              exit_code=1
+            fi
+          done
+          exit "$exit_code"
+
+      # shellcheck is preinstalled on GitHub's Ubuntu runners.
+      - name: Lint
+        run: shellcheck --severity=warning --external-sources --source-path=SCRIPTDIR scripts/*.sh
+
+  macos:
+    name: macOS (all three)
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: goproxy/go.mod
+          cache: false
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: nodeproxy/package-lock.json
+
+      - name: Test Go
+        run: go test ./...
+        working-directory: goproxy
+
+      - name: Test Python
+        run: python3 -m unittest discover -p "test_*.py"
+        working-directory: pyproxy
+
+      - name: Test Node
+        run: npm ci && npm test
+        working-directory: nodeproxy
+
+  # A single required check to protect the branch with, so the matrix can grow
+  # without reconfiguring branch protection.
+  ci:
+    name: CI
+    runs-on: ubuntu-latest
+    if: always()
+    needs: [go, python, node, parity, scripts, macos]
+    steps:
+      - name: Fail if any job did not succeed
+        if: >-
+          contains(needs.*.result, 'failure') ||
+          contains(needs.*.result, 'cancelled') ||
+          contains(needs.*.result, 'skipped')
+        run: |
+          echo "::error::Jobs did not all succeed: ${{ join(needs.*.result, ', ') }}"
+          exit 1
+
+      - name: Report success
+        run: echo "All jobs succeeded."
