@@ -2,7 +2,7 @@ name: CI
 
 on:
   push:
-    branches: ["**"]
+    branches: [main]
   pull_request:
   workflow_dispatch:
 
@@ -179,9 +179,14 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # Deliberately not go-version-file here. Go before 1.22.7/1.23.1 emits
+      # Mach-O binaries without an LC_UUID load command, which the linker on
+      # current macOS runners rejects ("missing LC_UUID load command", abort
+      # trap) before any test runs. That is a toolchain/OS interaction, not a
+      # property of this code — the Go 1.21 floor is covered by the ubuntu job.
       - uses: actions/setup-go@v5
         with:
-          go-version-file: goproxy/go.mod
+          go-version: stable
           cache: false
 
       - uses: actions/setup-python@v5

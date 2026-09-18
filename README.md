@@ -411,7 +411,7 @@ The parity check is the interesting one. It starts all three proxies against a s
 
 ### Continuous integration
 
-[`.github/workflows/ci.yml`](.github/workflows/ci.yml) runs on every push and pull request:
+[`.github/workflows/ci.yml`](.github/workflows/ci.yml) runs on pushes to `main` and on every pull request:
 
 | Job | Matrix | What it does |
 |---|---|---|
@@ -420,7 +420,7 @@ The parity check is the interesting one. It starts all three proxies against a s
 | **Node** | 18, 20, 22 | `npm ci`, then the full suite |
 | **Parity** | — | All three built and diffed against one upstream |
 | **Shell scripts** | — | `bash -n`, executable bits, `shellcheck` |
-| **macOS** | — | All three suites on `macos-latest` |
+| **macOS** | — | All three suites on `macos-latest`, on the current Go |
 
 A final `CI` job gates on every other one, so branch protection only needs that single required check even as the matrix grows.
 
