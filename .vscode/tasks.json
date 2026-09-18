@@ -1,0 +1,67 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "build: go",
+      "type": "shell",
+      "command": "go build -o goproxy .",
+      "options": { "cwd": "${workspaceFolder}/goproxy" },
+      "group": "build",
+      "problemMatcher": ["$go"]
+    },
+    {
+      "label": "test: all",
+      "type": "shell",
+      "command": "./scripts/test.sh all",
+      "options": { "cwd": "${workspaceFolder}" },
+      "group": { "kind": "test", "isDefault": true },
+      "problemMatcher": []
+    },
+    {
+      "label": "test: go",
+      "type": "shell",
+      "command": "go test ./...",
+      "options": { "cwd": "${workspaceFolder}/goproxy" },
+      "group": "test",
+      "problemMatcher": ["$go"]
+    },
+    {
+      "label": "test: python",
+      "type": "shell",
+      "command": "python3 -m unittest discover -p 'test_*.py' -v",
+      "options": { "cwd": "${workspaceFolder}/pyproxy" },
+      "group": "test",
+      "problemMatcher": []
+    },
+    {
+      "label": "test: node",
+      "type": "shell",
+      "command": "npm test",
+      "options": { "cwd": "${workspaceFolder}/nodeproxy" },
+      "group": "test",
+      "problemMatcher": []
+    },
+    {
+      "label": "parity check",
+      "type": "shell",
+      "command": "python3 scripts/parity_check.py",
+      "options": { "cwd": "${workspaceFolder}" },
+      "dependsOn": "build: go",
+      "problemMatcher": []
+    },
+    {
+      "label": "smoke test",
+      "type": "shell",
+      "command": "./scripts/smoke.sh",
+      "options": { "cwd": "${workspaceFolder}" },
+      "problemMatcher": []
+    },
+    {
+      "label": "setup",
+      "type": "shell",
+      "command": "make setup",
+      "options": { "cwd": "${workspaceFolder}" },
+      "problemMatcher": []
+    }
+  ]
+}

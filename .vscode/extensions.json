@@ -1,0 +1,8 @@
+{
+  "recommendations": [
+    "golang.go",
+    "ms-python.python",
+    "ms-python.debugpy",
+    "orta.vscode-jest"
+  ]
+}

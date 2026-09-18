@@ -1,0 +1,134 @@
+{
+  // Every config reads .env from the repo root (copy .env.example first).
+  // Values already exported in your shell do NOT override envFile here, so
+  // keep secrets in .env.
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Go: proxy",
+      "type": "go",
+      "request": "launch",
+      "mode": "debug",
+      "program": "${workspaceFolder}/goproxy",
+      "cwd": "${workspaceFolder}/goproxy",
+      "envFile": "${workspaceFolder}/.env",
+      "presentation": { "group": "1-run", "order": 1 }
+    },
+    {
+      "name": "Python: proxy",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/pyproxy/main.py",
+      "cwd": "${workspaceFolder}/pyproxy",
+      "console": "integratedTerminal",
+      "envFile": "${workspaceFolder}/.env",
+      "justMyCode": true,
+      "presentation": { "group": "1-run", "order": 2 }
+    },
+    {
+      "name": "Node: proxy",
+      "type": "node",
+      "request": "launch",
+      "program": "${workspaceFolder}/nodeproxy/main.js",
+      "cwd": "${workspaceFolder}/nodeproxy",
+      "console": "integratedTerminal",
+      "envFile": "${workspaceFolder}/.env",
+      "skipFiles": ["<node_internals>/**"],
+      "presentation": { "group": "1-run", "order": 3 }
+    },
+
+    {
+      "name": "Go: all tests",
+      "type": "go",
+      "request": "launch",
+      "mode": "test",
+      "program": "${workspaceFolder}/goproxy",
+      "cwd": "${workspaceFolder}/goproxy",
+      "args": ["-test.v"],
+      "presentation": { "group": "2-test", "order": 1 }
+    },
+    {
+      "name": "Go: test at cursor",
+      "type": "go",
+      "request": "launch",
+      "mode": "test",
+      "program": "${workspaceFolder}/goproxy",
+      "cwd": "${workspaceFolder}/goproxy",
+      "args": ["-test.v", "-test.run", "${selectedText}"],
+      "presentation": { "group": "2-test", "order": 2 }
+    },
+    {
+      "name": "Python: all tests",
+      "type": "debugpy",
+      "request": "launch",
+      "module": "unittest",
+      "args": ["discover", "-p", "test_*.py", "-v"],
+      "cwd": "${workspaceFolder}/pyproxy",
+      "console": "integratedTerminal",
+      "justMyCode": false,
+      "presentation": { "group": "2-test", "order": 3 }
+    },
+    {
+      "name": "Python: current test file",
+      "type": "debugpy",
+      "request": "launch",
+      "module": "unittest",
+      "args": ["-v", "${fileBasenameNoExtension}"],
+      "cwd": "${workspaceFolder}/pyproxy",
+      "console": "integratedTerminal",
+      "justMyCode": false,
+      "presentation": { "group": "2-test", "order": 4 }
+    },
+    {
+      "name": "Node: all tests",
+      "type": "node",
+      "request": "launch",
+      "program": "${workspaceFolder}/nodeproxy/node_modules/.bin/jest",
+      "args": ["--runInBand", "--testTimeout=10000"],
+      "cwd": "${workspaceFolder}/nodeproxy",
+      "console": "integratedTerminal",
+      "skipFiles": ["<node_internals>/**"],
+      "presentation": { "group": "2-test", "order": 5 }
+    },
+    {
+      "name": "Node: current test file",
+      "type": "node",
+      "request": "launch",
+      "program": "${workspaceFolder}/nodeproxy/node_modules/.bin/jest",
+      "args": ["--runInBand", "--testTimeout=10000", "${fileBasename}"],
+      "cwd": "${workspaceFolder}/nodeproxy",
+      "console": "integratedTerminal",
+      "skipFiles": ["<node_internals>/**"],
+      "presentation": { "group": "2-test", "order": 6 }
+    },
+
+    {
+      "name": "Parity: all three",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/scripts/parity_check.py",
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "justMyCode": false,
+      "preLaunchTask": "build: go",
+      "presentation": { "group": "3-tools", "order": 1 }
+    },
+    {
+      "name": "Attach: Node inspector (9229)",
+      "type": "node",
+      "request": "attach",
+      "port": 9229,
+      "restart": true,
+      "skipFiles": ["<node_internals>/**"],
+      "presentation": { "group": "3-tools", "order": 2 }
+    }
+  ],
+  "compounds": [
+    {
+      "name": "Debug: Go proxy + parity",
+      "configurations": ["Go: proxy", "Parity: all three"],
+      "stopAll": true,
+      "presentation": { "group": "3-tools", "order": 3 }
+    }
+  ]
+}

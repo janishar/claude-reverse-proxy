@@ -1,32 +1,136 @@
-# If you prefer the allow list template instead of the deny list, see community template:
-# https://github.com/github/gitignore/blob/main/community/Golang/Go.AllowList.gitignore
-#
-# Binaries for programs and plugins
+# ─────────────────────────────────────────────────────────────────────────────
+# Secrets and local configuration
+# ─────────────────────────────────────────────────────────────────────────────
+.env
+.env.*
+.envrc
+!.env.example
+*.pem
+*.key
+secrets.json
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Go
+# ─────────────────────────────────────────────────────────────────────────────
+# Built binaries. The Go binary is named after its directory, so it has no
+# extension and needs naming explicitly.
+goproxy/goproxy
+goproxy/goproxy.exe
+
+# Compiled objects and plugins
 *.exe
 *.exe~
 *.dll
 *.so
 *.dylib
 
-# Test binary, built with `go test -c`
+# Test binaries built with `go test -c`
 *.test
 
-# Code coverage profiles and other test artifacts
+# Coverage and profiling output
 *.out
-coverage.*
 *.coverprofile
+coverage.*
 profile.cov
+cpu.prof
+mem.prof
 
-# Dependency directories (remove the comment below to include it)
-# vendor/
-
-# Go workspace file
+# Go workspace and vendoring
 go.work
 go.work.sum
+# vendor/
 
-# env file
-.env
+# Delve debugger binaries
+__debug_*
+debug.test
 
-# Editor/IDE
-# .idea/
-# .vscode/
+# ─────────────────────────────────────────────────────────────────────────────
+# Python
+# ─────────────────────────────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.eggs/
+build/
+dist/
+.Python
+
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+
+# Tooling caches
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.tox/
+.nox/
+.coverage
+.coverage.*
+htmlcov/
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Node.js
+# ─────────────────────────────────────────────────────────────────────────────
+node_modules/
+jspm_packages/
+.npm
+.yarn/
+.pnp.*
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+.eslintcache
+*.tsbuildinfo
+
+# Jest / Istanbul coverage
+coverage/
+.nyc_output/
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Editors and IDEs
+# ─────────────────────────────────────────────────────────────────────────────
+# The VS Code debug setup is part of the project and is committed; everything
+# else VS Code writes into .vscode/ is local.
+.vscode/*
+!.vscode/launch.json
+!.vscode/tasks.json
+!.vscode/settings.json
+!.vscode/extensions.json
+
+.idea/
+*.iml
+*.swp
+*.swo
+*~
+.\#*
+\#*\#
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Operating system
+# ─────────────────────────────────────────────────────────────────────────────
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+Thumbs.db
+ehthumbs.db
+desktop.ini
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Logs and scratch files
+# ─────────────────────────────────────────────────────────────────────────────
+*.log
+logs/
+tmp/
+temp/
+*.tmp
+*.bak
+*.orig
+*.rej

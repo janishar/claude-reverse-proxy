@@ -1,0 +1,16 @@
+{
+  "go.testFlags": ["-v"],
+  "go.lintOnSave": "package",
+  "python.testing.unittestEnabled": true,
+  "python.testing.unittestArgs": ["-v", "-s", "pyproxy", "-p", "test_*.py"],
+  "python.testing.pytestEnabled": false,
+  "jest.rootPath": "nodeproxy",
+  "files.exclude": {
+    "**/__pycache__": true,
+    "**/node_modules": true
+  },
+  "search.exclude": {
+    "**/node_modules": true,
+    "**/coverage.out": true
+  }
+}
