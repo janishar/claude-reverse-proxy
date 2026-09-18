@@ -1,0 +1,2 @@
+# Python stdlib only - no external dependencies required
+# This file exists for consistency with other implementations
